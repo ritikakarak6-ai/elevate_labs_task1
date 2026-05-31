@@ -12,20 +12,37 @@ The goal of this task is to discover open ports on devices within the local netw
 sudo nmap -sS -oN intern_scan.txt 192.168.29.0/24
 
 
+
+
 -----------------------------------------------------------------------------------------------------------------------------
 
 
-**Scan Findings & Analysis**
 
-The scan discovered 3 active hosts in the network:
 
-1. Host 192.168.29.71: All 1000 ports are filtered (protected by a firewall or network rules).
+## Scan Findings & Analysis
 
-2. Host 192.168.29.119:
-       **Open Port:** 80/tcp (Service: http)
-       **Security Risk:** Port 80 runs unencrypted HTTP traffic. Anyone sniffing the local network could potentially                         intercept the data or credentials passing through this service. It should be upgraded to HTTPS (Port 443) or                 closed if unnecessary.
+The network reconnaissance discovered **3 active hosts** within the targeted range `192.168.29.0/24`. Below is an in-depth technical analysis of each host, its security posture, and associated risks:
 
-3. Host 192.168.29.187 (My Machine): All 1000 ports are closed, indicating minimal network exposure from this specific node.
+### 1. Host `192.168.29.71`
+- **Status:** Active
+- **Scan Result:** All 1000 ports are **Filtered**.
+- **Technical Analysis:** When Nmap sent TCP SYN packets to this host, it received no response (neither a SYN-ACK nor a RST). This implies that a packet filter or a firewall (such as Windows Defender or network rules) is actively monitoring the traffic and dropping the packets before they reach the target ports. 
+- **Security Posture:** Highly secure attack surface. Since the ports are filtered, external attackers cannot easily enumerate the services or OS running on this machine, minimizing the risk of targeted exploits.
+
+### 2. Host `192.168.29.119`
+- **Status:** Active
+- **Scan Result:** **Port 80/tcp** is **Open** (Service: `http`).
+- **Technical Analysis:** Port 80 is hosting an active web server utilizing the HTTP protocol. 
+- **Security Risk & Vulnerability (Critical):** HTTP is an unencrypted, clear-text protocol. It does not use any cryptographic wrapping (like SSL/TLS). If a user transmits confidential data (such as login credentials or session tokens) to this server, the data travels in plain text over the local network. An attacker conducting a Man-in-the-Middle (MITM) attack using packet sniffing tools like Wireshark can easily intercept and view this data without needing to crack any encryption.
+- **Remediation Plan:** 
+  1. If the web service is mandatory, it must be migrated to **HTTPS (Port 443)** by implementing an SSL/TLS certificate to secure data in transit.
+  2. If the service is redundant, the port should be closed or restricted using firewall rules.
+
+### 3. Host `192.168.29.187` (My Machine)
+- **Status:** Active
+- **Scan Result:** All 1000 ports are **Closed**.
+- **Technical Analysis:** For every SYN packet sent by Nmap, this machine responded immediately with a **RST (Reset)** packet. This confirms that while the host is alive, there are no active network services or applications listening for incoming connections on these 1000 standard ports.
+- **Security Posture:** Safe and minimal attack surface. With zero open services exposed to the local network, the host is well-protected against remote execution vulnerabilities or unauthorized entry points through network ports.
 
 
 
